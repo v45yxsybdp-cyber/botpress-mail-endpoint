@@ -1,43 +1,50 @@
 import nodemailer from "nodemailer";
 
 export default async function handler(req, res) {
-  try {
-    const data = req.body;
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-    const transporter = nodemailer.createTransport({
-      host: "smtp.ionos.de",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
-      },
-    });
+  const {
+    name,
+    email,
+    phone,
+    location,
+    propertyType,
+    budget,
+    timeline,
+    message
+  } = req.body;
 
-    await transporter.sendMail({
-      from: `"Botpress Lead" <${process.env.MAIL_USER}>`,
-      to: process.env.RECEIVER_MAIL,
-      subject: "Neuer Lead über Chatbot",
-      text: `
-Name: ${data.contact_name}
-E-Mail: ${data.contact_email}
-Telefon: ${data.contact_phone}
+  const transporter = nodemailer.createTransport({
+    host: "smtp.ionos.de",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS
+    }
+  });
 
-Objekt: ${data.buyer_property_type}
-Budget: ${data.buyer_budget_max}
-Zeitrahmen: ${data.buyer_timeline}
+  await transporter.sendMail({
+    from: process.env.MAIL_USER,
+    to: process.env.RECEIVER_MAIL,
+    subject: "Neuer Lead von Botpress",
+    text: `
+Name: ${name}
+E-Mail: ${email}
+Telefon: ${phone}
+Ort: ${location}
+Objekt: ${propertyType}
+Budget: ${budget}
+Zeitrahmen: ${timeline}
 
 Nachricht:
-${data.optional_message}
-      `,
-    });
+${message}
+`
+  });
 
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
-  }
+  res.status(200).json({ ok: true });
 }
-
 
 
