@@ -1,48 +1,41 @@
 import nodemailer from "nodemailer";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST allowed" });
-  }
-
-  const {
-    name,
-    email,
-    phone,
-    message,
-    summary
-  } = req.body;
-
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS
-    }
-  });
-
   try {
+    const data = req.body;
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.ionos.de",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+
     await transporter.sendMail({
-      from: `"Website Lead" <${process.env.MAIL_USER}>`,
+      from: `"Botpress Lead" <${process.env.MAIL_USER}>`,
       to: process.env.RECEIVER_MAIL,
-      subject: "Neue Immobilien-Anfrage",
+      subject: "Neue Anfrage vom Chatbot",
       text: `
-Name: ${name}
-E-Mail: ${email}
-Telefon: ${phone}
+Name: ${data.contact_name}
+E-Mail: ${data.contact_email}
+Telefon: ${data.contact_phone}
 
-Zusammenfassung:
-${summary}
+Objekt: ${data.buyer_property_type}
+Budget: ${data.buyer_budget_max}
+Zeitrahmen: ${data.buyer_timeline}
 
-Optionale Nachricht:
-${message || "-"}
-      `
+Nachricht:
+${data.optional_message || "-"}
+      `,
     });
 
     res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Mail failed" });
   }
 }
+
