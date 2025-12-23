@@ -1,14 +1,20 @@
 import nodemailer from "nodemailer";
 
 export default async function handler(req, res) {
-  console.log("➡️ API HIT");
-
   if (req.method !== "POST") {
-    console.log("❌ Wrong method");
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  console.log("📦 Body:", req.body);
+  const {
+    name,
+    email,
+    phone,
+    location,
+    propertyType,
+    budget,
+    timeline,
+    message
+  } = req.body;
 
   try {
     const transporter = nodemailer.createTransport({
@@ -21,22 +27,28 @@ export default async function handler(req, res) {
       }
     });
 
-    console.log("🔐 SMTP config loaded");
-
     await transporter.sendMail({
       from: process.env.MAIL_USER,
       to: process.env.RECEIVER_MAIL,
-      subject: "TEST – Botpress Lead",
-      text: "Wenn du das liest, funktioniert SMTP."
-    });
+      subject: "Neuer Lead von Botpress",
+      text: `
+Name: ${name}
+E-Mail: ${email}
+Telefon: ${phone}
+Ort: ${location}
+Objekt: ${propertyType}
+Budget: ${budget}
+Zeitrahmen: ${timeline}
 
-    console.log("✅ MAIL SENT");
+Nachricht:
+${message}
+      `
+    });
 
     return res.status(200).json({ ok: true });
   } catch (err) {
-    console.error("🔥 MAIL ERROR:", err);
+    console.error("MAIL ERROR:", err);
     return res.status(500).json({ error: err.message });
   }
 }
-
 
