@@ -6,7 +6,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // === DATEN AUS BOTPRESS ===
     const {
       lead_type,
       contact_name,
@@ -14,49 +13,46 @@ export default async function handler(req, res) {
       contact_phone,
       buyer_timeline,
       object_reference,
-      optional_message
+      optional_message,
     } = req.body;
 
-    // === SMTP TRANSPORT (WICHTIG: IDENTISCH ZUM FUNKTIONIERENDEN ENDPOINT) ===
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === "true",
+      host: process.env.SMTP_HOST,          // z.B. smtp.ionos.de
+      port: Number(process.env.SMTP_PORT),  // 587
+      secure: false,                        // MUSS false bei 587
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
+        user: process.env.SMTP_USER,        // komplette E-Mail
+        pass: process.env.SMTP_PASS,        // Mail-Passwort
+      },
     });
 
-    // === MAIL TEXT ===
     const mailText = `
-${lead_type} – Konkrete Kaufanfrage
+Lead-Typ: ${lead_type}
 
-Name: ${contact_name || "-"}
-E-Mail: ${contact_email || "-"}
-Telefon: ${contact_phone || "-"}
+Name: ${contact_name}
+E-Mail: ${contact_email}
+Telefon: ${contact_phone}
 
 Zeitrahmen:
-${buyer_timeline || "-"}
+${buyer_timeline}
 
-Bezug auf Immobilie:
-${object_reference || "-"}
+Objekt:
+${object_reference}
 
-Zusätzliche Nachricht:
+Nachricht:
 ${optional_message || "-"}
 `;
 
-    // === MAIL SENDEN ===
     await transporter.sendMail({
-      from: process.env.MAIL_FROM,
+      from: process.env.SMTP_USER,
       to: process.env.MAIL_TO,
-      subject: `${lead_type} – Konkrete Kaufanfrage`,
-      text: mailText
+      subject: `Neuer Lead – ${lead_type}`,
+      text: mailText,
     });
 
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error("Mail error:", error);
-    return res.status(500).json({ error: "Mail could not be sent" });
+    console.error("MAIL ERROR:", error);
+    return res.status(500).json({ error: "Mail failed" });
   }
 }
