@@ -6,7 +6,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 🔹 ALLE DATEN AUS BOTPRESS
     const {
       lead_type,
       contact_name,
@@ -17,7 +16,6 @@ export default async function handler(req, res) {
       optional_message,
     } = req.body;
 
-    // 🔹 MAIL TRANSPORT
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
@@ -28,34 +26,27 @@ export default async function handler(req, res) {
       },
     });
 
-    // 🔹 MAIL TEXT (BACKTICKS – SEHR WICHTIG)
     const mailText = `
-🔴 ${lead_type} LEAD – Kaufanfrage (konkrete Immobilie)
+${lead_type} – Konkrete Kaufanfrage
 
-Name:
-${contact_name || "-"}
-
-E-Mail:
-${contact_email || "-"}
-
-Telefon:
-${contact_phone || "-"}
+Name: ${contact_name}
+E-Mail: ${contact_email}
+Telefon: ${contact_phone}
 
 Zeitrahmen:
-${buyer_timeline || "-"}
+${buyer_timeline}
 
 Bezug auf Immobilie:
-${object_reference || "-"}
+${object_reference}
 
 Zusätzliche Nachricht:
 ${optional_message || "-"}
-`;
+    `;
 
-    // 🔹 MAIL SENDEN
     await transporter.sendMail({
       from: process.env.MAIL_FROM,
       to: process.env.MAIL_TO,
-      subject: `🔴 ${lead_type} LEAD – Konkrete Kaufanfrage`,
+      subject: `${lead_type} – Konkrete Kaufanfrage`,
       text: mailText,
     });
 
@@ -65,3 +56,4 @@ ${optional_message || "-"}
     return res.status(500).json({ error: "Mail could not be sent" });
   }
 }
+
