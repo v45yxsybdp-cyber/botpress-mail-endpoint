@@ -1,34 +1,56 @@
+import nodemailer from 'nodemailer'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const {
-    object_reference,
-    object_question,
-    contact_name,
-    contact_phone,
-    contact_email
-  } = req.body
+  try {
+    const {
+      object_reference,
+      object_question,
+      contact_name,
+      contact_phone,
+      contact_email
+    } = req.body
 
-  const subject = 'Neue Objektfrage'
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: Number(process.env.SMTP_PORT) === 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    })
 
-  const text = `
+    const subject = 'Neue Objektanfrage'
+
+    const text = `
 Neue Frage zu einer Immobilie
 
 Objekt:
-${object_reference}
+${object_reference || '-'}
 
 Frage:
-${object_question}
+${object_question || '-'}
 
 Kontakt:
-Name: ${contact_name}
-Telefon: ${contact_phone}
-E-Mail: ${contact_email}
+Name: ${contact_name || '-'}
+Telefon: ${contact_phone || '-'}
+E-Mail: ${contact_email || '-'}
 `
 
-  // await sendMail({ subject, text })
+    await transporter.sendMail({
+      from: process.env.MAIL_FROM,
+      to: process.env.MAIL_TO,
+      subject,
+      text
+    })
 
-  return res.status(200).json({ success: true })
+    return res.status(200).json({ success: true })
+  } catch (error) {
+    console.error('SEND OBJECT QUESTION ERROR:', error)
+    return res.status(500).json({ error: 'Mail could not be sent' })
+  }
 }
