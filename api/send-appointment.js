@@ -25,15 +25,15 @@ NEUE TERMINANFRAGE
 
 Ein Interessent bittet um ein Beratungsgespräch.
 
-Kontaktdaten
+Kontaktdaten:
 Name: ${name || '-'}
 Telefon: ${phone || '-'}
 E-Mail: ${email || '-'}
 
-Bevorzugte Zeit
+Bevorzugte Zeit:
 ${preferred_time || '-'}
 
-Zusätzliche Hinweise
+Zusätzliche Hinweise:
 ${note || 'Keine Angabe'}
 
 —
