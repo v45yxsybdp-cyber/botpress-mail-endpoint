@@ -6,39 +6,38 @@ export default async function handler(req, res) {
   }
 
   try {
-    const {
-      name,
-      phone,
-      email,
-      preferred_time,
-      note
-    } = req.body
+    const { name, phone, email, preferred_time, note } = req.body
 
-    // SMTP Transporter (nutzt deine bestehenden ENV Variablen)
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: Number(process.env.SMTP_PORT) === 465, // true bei 465, sonst false
+      secure: Number(process.env.SMTP_PORT) === 465,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
       }
     })
 
-    const subject = 'Neuer Beratungswunsch'
+    const subject = 'Neue Terminanfrage – Beratungsgespräch'
 
     const text = `
-Neuer Terminwunsch
+NEUE TERMINANFRAGE
 
+Ein Interessent bittet um ein Beratungsgespräch.
+
+Kontaktdaten
 Name: ${name || '-'}
 Telefon: ${phone || '-'}
 E-Mail: ${email || '-'}
 
-Bevorzugte Zeit:
+Bevorzugte Zeit
 ${preferred_time || '-'}
 
-Zusätzliche Hinweise:
-${note || '-'}
+Zusätzliche Hinweise
+${note || 'Keine Angabe'}
+
+—
+Automatisch über den Website-Chatbot übermittelt
 `
 
     await transporter.sendMail({
@@ -49,8 +48,9 @@ ${note || '-'}
     })
 
     return res.status(200).json({ success: true })
-  } catch (error) {
-    console.error('SEND APPOINTMENT ERROR:', error)
+  } catch (err) {
+    console.error(err)
     return res.status(500).json({ error: 'Mail could not be sent' })
   }
 }
+
