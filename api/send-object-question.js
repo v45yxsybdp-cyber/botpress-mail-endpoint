@@ -24,21 +24,26 @@ export default async function handler(req, res) {
       }
     })
 
-    const subject = 'Neue Objektanfrage'
+    const subject = 'Neue Objektanfrage – Rückfrage zu Immobilie'
 
     const text = `
-Neue Frage zu einer Immobilie
+NEUE OBJEKTANFRAGE
+
+Ein Interessent hat eine Frage zu einer Immobilie.
 
 Objekt:
 ${object_reference || '-'}
 
-Frage:
+Anfrage:
 ${object_question || '-'}
 
-Kontakt:
+Kontaktdaten:
 Name: ${contact_name || '-'}
 Telefon: ${contact_phone || '-'}
 E-Mail: ${contact_email || '-'}
+
+—
+Automatisch über den Website-Chatbot übermittelt
 `
 
     await transporter.sendMail({
@@ -49,8 +54,8 @@ E-Mail: ${contact_email || '-'}
     })
 
     return res.status(200).json({ success: true })
-  } catch (error) {
-    console.error('SEND OBJECT QUESTION ERROR:', error)
+  } catch (err) {
+    console.error(err)
     return res.status(500).json({ error: 'Mail could not be sent' })
   }
 }
